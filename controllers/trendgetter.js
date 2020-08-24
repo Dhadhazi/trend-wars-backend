@@ -47,7 +47,8 @@ module.exports = async (startDate, endDate, category, place, keywords) => {
     for (let j = i + 1; j < keywords.length; j++) {
       await delay();
       const pair = await getPair(keywords[i], keywords[j]);
-      pairs.push(pair);
+      if (pair[0].score !== undefined && pair[1].score !== undefined)
+        pairs.push(pair);
     }
   }
 
