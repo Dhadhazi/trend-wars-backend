@@ -1,7 +1,7 @@
 const { ApolloServer, ApolloError } = require("apollo-server");
 const path = require("path");
 
-const typeDefs = require("./typeDefs/");
+const typeDefs = require("./typeDefs");
 const resolvers = require("./resolvers/");
 const db = require("./controllers/dbcontroller");
 
@@ -20,6 +20,7 @@ const server = new ApolloServer({
   resolvers,
   formatError: (err) => {
     if (err.extensions.code == "INTERNAL_SERVER_ERROR") {
+      console.log(err);
       return new ApolloError("We are having some trouble", "ERROR");
     }
     return err;

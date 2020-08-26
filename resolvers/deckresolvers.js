@@ -71,5 +71,15 @@ module.exports = {
         new ApolloError("Unable to delete the deck", "DELETEDECKERROR");
       }
     },
+    editDeck: async (parent, { texts }) => {
+      console.log(texts);
+      // try {
+
+      //   });
+      //   return "edited";
+      // } catch (err) {
+      //   new ApolloError("Unable to delete the deck", "DELETEDECKERROR");
+      // }
+    },
   },
 };
