@@ -89,6 +89,7 @@ module.exports = gql`
     deleteDeck(_id: ID): String
     addGameRoom(input: GameRoomInput): String
     joinGameRoom(nick: String, gameId: String): GameRoom
+    exitGameRoom(nick: String, gameId: String): Boolean
     addPlayerAnswer(gameId: String, nick: String, winner: Boolean): Boolean
     changeGameRoomState(gameId: String, state: Int): Boolean
   }

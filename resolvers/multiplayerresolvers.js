@@ -29,16 +29,15 @@ module.exports = {
   },
   Mutation: {
     addGameRoom: async (parent, { input }) => {
-      async function checkGameId(id) {
-        const data = await GameRoomModell.findOne({ gameId: id });
-        if (data === null) return true;
+      function checkGameId(id) {
+        if (gameRoomsLocal[id] === undefined) return true;
         return false;
       }
       let gameId = Math.random().toString(36).substr(4, 5).toUpperCase();
-      while ((await checkGameId(gameId)) !== true) {
+      while (checkGameId(gameId) !== true) {
         gameId = Math.random().toString(36).substr(4, 5).toUpperCase();
       }
-      console.log("Add game room");
+
       gameRoomsLocal[gameId] = {};
       gameRoomsLocal[gameId].gameId = gameId;
       gameRoomsLocal[gameId].answers = 0;
@@ -52,88 +51,59 @@ module.exports = {
         timer: input.gameDeck.timer,
         pairs: input.gameDeck.pairs,
       };
-
-      const newRoom = new GameRoomModell({
-        gameId,
-        players: [{ nick: input.creator }],
-        gameDeck: {
-          name: input.gameDeck.name,
-          description: input.gameDeck.description,
-          dateString: input.gameDeck.dateString,
-          geo: input.gameDeck.geo,
-          timer: input.gameDeck.timer,
-          pairs: input.gameDeck.pairs,
-        },
-      });
-      try {
-        await newRoom.save();
-        return gameId;
-      } catch (err) {
-        new ApolloError("Unable to save the room", "CREATEROOMERROR");
-      }
+      return gameId;
     },
 
-    joinGameRoom: async (parent, { nick, gameId }) => {
-      try {
-        const data = await GameRoomModell.findOne({
-          gameId: gameId,
-        });
-        data.players.push({ nick });
+    joinGameRoom: (parent, { nick, gameId }) => {
+      if (gameRoomsLocal[gameId] !== undefined) {
         gameRoomsLocal[gameId].players.push({ nick, points: 0 });
         pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
-        data.save();
-        return data;
-      } catch (err) {
-        new ApolloError("Unable to retrieve room", "GETROOMERROR");
+        return gameRoomsLocal[gameId];
       }
     },
 
-    /*When answer = player number, client shows results. All client submits answers */
-    addPlayerAnswer: async (parent, { gameId, nick, winner }) => {
-      try {
-        const data = await GameRoomModell.findOne({
-          gameId: gameId,
-        });
-        if (winner) {
-          gameRoomsLocal[gameId].players = gameRoomsLocal[gameId].players.map(
-            (p) => {
-              if (p.nick === nick) p.points++;
-              return p;
-            }
-          );
-          data.players = data.players.map((p) => {
+    exitGameRoom: (parent, { nick, gameId }) => {
+      if (gameRoomsLocal[gameId] !== undefined) {
+        console.log("somebody quit");
+        gameRoomsLocal[gameId].players = gameRoomsLocal[gameId].players.filter(
+          (p) => p.nick !== nick
+        );
+        pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
+        return true;
+      }
+      return false;
+    },
+
+    /*When answer = player number, client shows results. All client MUST submit answers */
+    addPlayerAnswer: (parent, { gameId, nick, winner }) => {
+      if (winner) {
+        gameRoomsLocal[gameId].players = gameRoomsLocal[gameId].players.map(
+          (p) => {
             if (p.nick === nick) p.points++;
             return p;
-          });
-        }
-        gameRoomsLocal[gameId].answers++;
-        data.answers++;
-        pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
-        data.save();
-        return true;
-      } catch (err) {
-        new ApolloError("Unable to retrieve room", "GETROOMERROR");
+          }
+        );
       }
+      gameRoomsLocal[gameId].answers++;
+
+      pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
+
+      return true;
     },
 
     /*When the room updates, answer reset. state drive the game for everybody. 
     State checks in client. Creator client changes the state*/
     changeGameRoomState: async (parent, { gameId, state }) => {
-      console.log("Incoming state: ", state);
-      try {
-        const data = await GameRoomModell.findOne({
-          gameId: gameId,
-        });
-        gameRoomsLocal[gameId].answers = 0;
-        gameRoomsLocal[gameId].state = state;
-        data.answers = 0;
-        data.state = state;
-        pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
-        data.save();
-        return true;
-      } catch (err) {
-        new ApolloError("Unable to retrieve room", "GETROOMERROR");
+      gameRoomsLocal[gameId].answers = 0;
+      gameRoomsLocal[gameId].state = state;
+      pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
+      if (
+        gameRoomsLocal[gameId].state ===
+        gameRoomsLocal[gameId].gameDeck.pairs.length
+      ) {
+        delete gameRoomsLocal[gameId];
       }
+      return true;
     },
   },
 
