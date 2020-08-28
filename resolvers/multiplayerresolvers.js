@@ -4,7 +4,9 @@ const GameRoomModell = require("../models/GameRoomModel");
 
 const pubsub = new PubSub();
 
-let answerCounter = 0;
+/*Storing game data locally instead of the DB, so when 2 even occures at the same time (timer our and players got points) 
+it does count both of them in and not adding the values at the same time to the same object in the db*/
+let gameRoomsLocal = {};
 
 module.exports = {
   Query: {
@@ -36,6 +38,20 @@ module.exports = {
       while ((await checkGameId(gameId)) !== true) {
         gameId = Math.random().toString(36).substr(4, 5).toUpperCase();
       }
+      console.log("Add game room");
+      gameRoomsLocal[gameId] = {};
+      gameRoomsLocal[gameId].gameId = gameId;
+      gameRoomsLocal[gameId].answers = 0;
+      gameRoomsLocal[gameId].players = [{ nick: input.creator, points: 0 }];
+      gameRoomsLocal[gameId].state = -1;
+      gameRoomsLocal[gameId].gameDeck = {
+        name: input.gameDeck.name,
+        description: input.gameDeck.description,
+        dateString: input.gameDeck.dateString,
+        geo: input.gameDeck.geo,
+        timer: input.gameDeck.timer,
+        pairs: input.gameDeck.pairs,
+      };
 
       const newRoom = new GameRoomModell({
         gameId,
@@ -63,8 +79,8 @@ module.exports = {
           gameId: gameId,
         });
         data.players.push({ nick });
-
-        pubsub.publish("roomupdate", { GameRoom: data });
+        gameRoomsLocal[gameId].players.push({ nick, points: 0 });
+        pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
         data.save();
         return data;
       } catch (err) {
@@ -79,15 +95,20 @@ module.exports = {
           gameId: gameId,
         });
         if (winner) {
+          gameRoomsLocal[gameId].players = gameRoomsLocal[gameId].players.map(
+            (p) => {
+              if (p.nick === nick) p.points++;
+              return p;
+            }
+          );
           data.players = data.players.map((p) => {
             if (p.nick === nick) p.points++;
             return p;
           });
         }
+        gameRoomsLocal[gameId].answers++;
         data.answers++;
-        answerCounter++;
-        console.log("answercounter", answerCounter);
-        pubsub.publish("roomupdate", { GameRoom: data });
+        pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
         data.save();
         return true;
       } catch (err) {
@@ -98,13 +119,16 @@ module.exports = {
     /*When the room updates, answer reset. state drive the game for everybody. 
     State checks in client. Creator client changes the state*/
     changeGameRoomState: async (parent, { gameId, state }) => {
+      console.log("Incoming state: ", state);
       try {
         const data = await GameRoomModell.findOne({
           gameId: gameId,
         });
+        gameRoomsLocal[gameId].answers = 0;
+        gameRoomsLocal[gameId].state = state;
         data.answers = 0;
         data.state = state;
-        pubsub.publish("roomupdate", { GameRoom: data });
+        pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
         data.save();
         return true;
       } catch (err) {
