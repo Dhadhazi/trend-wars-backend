@@ -72,6 +72,8 @@ module.exports = gql`
   type GameRoom {
     _id: ID
     gameId: String
+    state: Int
+    answers: Int
     players: [MultiPlayer]
     gameDeck: GameDeck
   }
@@ -87,7 +89,8 @@ module.exports = gql`
     deleteDeck(_id: ID): String
     addGameRoom(input: GameRoomInput): String
     joinGameRoom(nick: String, gameId: String): GameRoom
-    addOnePlayerScore(gameId: String, nick: String): Int
+    addPlayerAnswer(gameId: String, nick: String, winner: Boolean): Boolean
+    changeGameRoomState(gameId: String, state: Int): Boolean
   }
 
   type Query {

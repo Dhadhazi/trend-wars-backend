@@ -4,16 +4,7 @@ const GameRoomModell = require("../models/GameRoomModel");
 
 const pubsub = new PubSub();
 
-let gameRooms = [
-  {
-    gameId: "5XC72",
-
-    players: [
-      { nick: "John", points: 0 },
-      { nick: "Lucy", points: 0 },
-    ],
-  },
-];
+let answerCounter = 0;
 
 module.exports = {
   Query: {
@@ -81,30 +72,47 @@ module.exports = {
       }
     },
 
-    addOnePlayerScore: async (parent, { gameId, nick }) => {
+    /*When answer = player number, client shows results. All client submits answers */
+    addPlayerAnswer: async (parent, { gameId, nick, winner }) => {
       try {
         const data = await GameRoomModell.findOne({
           gameId: gameId,
         });
-
-        data.players = data.players.map((p) => {
-          if (p.nick === nick) p.points++;
-          return p;
-        });
-        console.log(data);
-        return 5;
+        if (winner) {
+          data.players = data.players.map((p) => {
+            if (p.nick === nick) p.points++;
+            return p;
+          });
+        }
+        data.answers++;
+        answerCounter++;
+        console.log("answercounter", answerCounter);
+        pubsub.publish("roomupdate", { GameRoom: data });
+        data.save();
+        return true;
       } catch (err) {
         new ApolloError("Unable to retrieve room", "GETROOMERROR");
       }
-      // pubsub.publish("pointAdded", {
-      //   gameId: gameRooms[0].gameId,
-      //   multiGamePlayer: {
-      //     nick: "John",
-      //     points: gameRooms[0].players[0].points,
-      //   },
-      // });
+    },
+
+    /*When the room updates, answer reset. state drive the game for everybody. 
+    State checks in client. Creator client changes the state*/
+    changeGameRoomState: async (parent, { gameId, state }) => {
+      try {
+        const data = await GameRoomModell.findOne({
+          gameId: gameId,
+        });
+        data.answers = 0;
+        data.state = state;
+        pubsub.publish("roomupdate", { GameRoom: data });
+        data.save();
+        return true;
+      } catch (err) {
+        new ApolloError("Unable to retrieve room", "GETROOMERROR");
+      }
     },
   },
+
   Subscription: {
     GameRoom: {
       subscribe: withFilter(

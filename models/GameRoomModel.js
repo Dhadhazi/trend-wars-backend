@@ -26,6 +26,8 @@ const gameroomSchema = new mongoose.Schema({
       ],
     ],
   },
+  state: { type: Number, default: -1 },
+  answers: { type: Number, default: 0 },
   created_at: { type: Date, default: Date.now },
 });
 
