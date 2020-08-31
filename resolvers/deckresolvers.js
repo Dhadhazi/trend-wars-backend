@@ -33,7 +33,6 @@ module.exports = {
 
   Mutation: {
     addDeck: async (parent, { deck }) => {
-      console.log("adding deck...");
       const pairs = await trendgetter(
         deck.start_date,
         deck.end_date,
@@ -59,7 +58,6 @@ module.exports = {
       }
     },
     deleteDeck: async (parent, { _id }) => {
-      console.log("deleting deck");
       try {
         Deck.findByIdAndDelete(_id, (err) => {
           if (err) {
@@ -70,16 +68,6 @@ module.exports = {
       } catch (err) {
         new ApolloError("Unable to delete the deck", "DELETEDECKERROR");
       }
-    },
-    editDeck: async (parent, { texts }) => {
-      console.log(texts);
-      // try {
-
-      //   });
-      //   return "edited";
-      // } catch (err) {
-      //   new ApolloError("Unable to delete the deck", "DELETEDECKERROR");
-      // }
     },
   },
 };

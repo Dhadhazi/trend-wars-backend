@@ -55,11 +55,6 @@ module.exports = gql`
     timer: Int
   }
 
-  input EditDeckInput {
-    name: String
-    keywords: String
-  }
-
   type MultiPlayer {
     nick: String
     points: Int
@@ -85,9 +80,9 @@ module.exports = gql`
 
   type Mutation {
     addDeck(deck: DeckInput): String
-    editDeck(texts: EditDeckInput): String
     deleteDeck(_id: ID): String
     addGameRoom(input: GameRoomInput): String
+    nickExistsCheck(nick: String, gameId: String): Boolean
     joinGameRoom(nick: String, gameId: String): GameRoom
     exitGameRoom(nick: String, gameId: String): Boolean
     addPlayerAnswer(gameId: String, nick: String, winner: Boolean): Boolean
@@ -98,8 +93,6 @@ module.exports = gql`
     decks: [Deck]
     deckById(_id: ID): Deck
     decksByCategory(category: Int): [Deck]
-    gameRooms: [GameRoom]
-    gameRoomById(gameId: String): GameRoom
   }
 
   type Subscription {

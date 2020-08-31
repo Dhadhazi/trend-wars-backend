@@ -1,4 +1,4 @@
-const { PubSub, withFilter, ApolloError } = require("apollo-server");
+const { PubSub, withFilter } = require("apollo-server");
 
 const GameRoomModell = require("../models/GameRoomModel");
 
@@ -9,25 +9,8 @@ it does count both of them in and not adding the values at the same time to the 
 let gameRoomsLocal = {};
 
 module.exports = {
-  Query: {
-    gameRooms: async () => {
-      try {
-        const data = await GameRoomModell.find({});
-        return data;
-      } catch (err) {
-        new ApolloError("Unable to retrieve rooms", "GETROOMERROR");
-      }
-    },
-    gameRoomById: async (parent, { gameId }) => {
-      try {
-        const data = await GameRoomModell.findOne({ gameId: gameId });
-        return data;
-      } catch (err) {
-        new ApolloError("Unable to retrieve room", "GETROOMERROR");
-      }
-    },
-  },
   Mutation: {
+    //Creates a game locally as an object in the gameRoomsLocal
     addGameRoom: async (parent, { input }) => {
       function checkGameId(id) {
         if (gameRoomsLocal[id] === undefined) return true;
@@ -39,6 +22,7 @@ module.exports = {
       }
 
       gameRoomsLocal[gameId] = {};
+      gameRoomsLocal[gameId].creator = input.creator;
       gameRoomsLocal[gameId].gameId = gameId;
       gameRoomsLocal[gameId].answers = 0;
       gameRoomsLocal[gameId].players = [{ nick: input.creator, points: 0 }];
@@ -54,6 +38,17 @@ module.exports = {
       return gameId;
     },
 
+    //checks if the nick already exists int he game room. True if exists, false if not
+    nickExistsCheck: (parent, { nick, gameId }) => {
+      if (gameRoomsLocal[gameId] !== undefined) {
+        const nickCheck = gameRoomsLocal[gameId].players.filter(
+          (p) => p.nick === nick
+        );
+        return nickCheck.length > 0 ? true : false;
+      }
+    },
+
+    //The mutation to join the game if it exists
     joinGameRoom: (parent, { nick, gameId }) => {
       if (gameRoomsLocal[gameId] !== undefined) {
         gameRoomsLocal[gameId].players.push({ nick, points: 0 });
@@ -62,13 +57,18 @@ module.exports = {
       }
     },
 
+    //When a player quits it kicks him out of the game
     exitGameRoom: (parent, { nick, gameId }) => {
       if (gameRoomsLocal[gameId] !== undefined) {
-        console.log("somebody quit");
+        if (nick === gameRoomsLocal[gameId].creator) {
+          console.log("The creator quit, so I need to abort the game");
+          gameRoomsLocal[gameId].state = -2;
+        }
         gameRoomsLocal[gameId].players = gameRoomsLocal[gameId].players.filter(
           (p) => p.nick !== nick
         );
         pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
+        delete gameRoomsLocal[gameId];
         return true;
       }
       return false;
@@ -92,7 +92,7 @@ module.exports = {
     },
 
     /*When the room updates, answer reset. state drive the game for everybody. 
-    State checks in client. Creator client changes the state*/
+    State checks in client. Creator's client initiates the state change*/
     changeGameRoomState: async (parent, { gameId, state }) => {
       gameRoomsLocal[gameId].answers = 0;
       gameRoomsLocal[gameId].state = state;
