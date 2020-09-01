@@ -78,15 +78,26 @@ module.exports = gql`
     gameDeck: GameDeckInput
   }
 
+  input RegistrationInput {
+    email: String
+    password: String
+  }
+
   type Mutation {
+    # Deck Resolvers
     addDeck(deck: DeckInput): String
     deleteDeck(_id: ID): String
+
+    # Multiplayer Resolvers
     addGameRoom(input: GameRoomInput): String
     nickExistsCheck(nick: String, gameId: String): Boolean
     joinGameRoom(nick: String, gameId: String): GameRoom
     exitGameRoom(nick: String, gameId: String): Boolean
     addPlayerAnswer(gameId: String, nick: String, winner: Boolean): Boolean
     changeGameRoomState(gameId: String, state: Int): Boolean
+
+    # User Resolvers
+    registerUser(input: RegistrationInput): Boolean
   }
 
   type Query {
