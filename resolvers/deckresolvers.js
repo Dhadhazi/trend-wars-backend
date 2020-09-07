@@ -59,7 +59,7 @@ module.exports = {
     },
     approveDeck: async (parent, { deck }) => {
       try {
-        const data = await Deck.findById(_id);
+        const data = await Deck.findById(deck._id);
         const pairs = await trendgetter(
           deck.start_date,
           deck.end_date,
@@ -76,9 +76,8 @@ module.exports = {
         data.geo = deck.geo;
         data.approved = true;
         data.pairs = pairs;
-        console.log(data);
-        // await data.save();
-        return data;
+        await data.save();
+        return "deck created";
       } catch (err) {
         new ApolloError("Unable to approve deck", "APPROVEDECKERROR");
       }

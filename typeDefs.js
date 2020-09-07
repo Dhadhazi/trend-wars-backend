@@ -23,6 +23,8 @@ module.exports = gql`
     start_date: String
     end_date: String
     category: Int
+    approved: Boolean
+    created_at: String
     geo: [String]
     pairs: [[Pair]]
   }
