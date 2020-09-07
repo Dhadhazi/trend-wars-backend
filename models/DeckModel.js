@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const deckSchema = new mongoose.Schema({
   name: String,
   description: String,
-  number_of_played: { type: Number, default: 0 },
   keywords: [String],
   start_date: String,
   end_date: String,
@@ -15,16 +14,15 @@ const deckSchema = new mongoose.Schema({
         word: String,
         score: Number,
         winner: Boolean,
-        total_chosen: { type: Number, default: 0 },
       },
       {
         word: String,
         score: Number,
         winner: Boolean,
-        total_chosen: { type: Number, default: 0 },
       },
     ],
   ],
+  approved: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now },
 });
 

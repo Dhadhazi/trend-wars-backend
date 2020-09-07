@@ -28,6 +28,7 @@ module.exports = gql`
   }
 
   input DeckInput {
+    _id: String
     name: String
     description: String
     keywords: [String]
@@ -85,7 +86,9 @@ module.exports = gql`
 
   type Mutation {
     # Deck Resolvers
+    userAddDeck(deck: DeckInput): String
     addDeck(deck: DeckInput): String
+    approveDeck(deck: DeckInput): String
     deleteDeck(_id: ID): String
 
     # Multiplayer Resolvers
@@ -102,6 +105,7 @@ module.exports = gql`
 
   type Query {
     decks: [Deck]
+    decksUnapproved: [Deck]
     deckById(_id: ID): Deck
     decksByCategory(category: Int): [Deck]
   }
