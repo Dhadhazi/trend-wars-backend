@@ -79,32 +79,18 @@ module.exports = {
         await data.save();
         return "deck created";
       } catch (err) {
-        new ApolloError("Unable to approve deck", "APPROVEDECKERROR");
+        new ApolloError("Unable to approve deck", "CREATEDECKERROR");
       }
     },
-    addDeck: async (parent, { deck }) => {
-      const pairs = await trendgetter(
-        deck.start_date,
-        deck.end_date,
-        deck.category,
-        deck.geo,
-        deck.keywords
-      );
-      const newDeck = new Deck({
-        name: deck.name,
-        description: deck.description,
-        keywords: deck.keywords,
-        start_date: deck.start_date,
-        end_date: deck.end_date,
-        category: deck.category,
-        geo: deck.geo,
-        pairs,
-      });
+    editDeck: async (parent, { deck }) => {
       try {
-        await newDeck.save();
-        return "Deck Saved";
+        const data = await Deck.findById(deck._id);
+        data.name = deck.name;
+        data.description = deck.description;
+        await data.save();
+        return "deck updated";
       } catch (err) {
-        new ApolloError("Unable to save the deck", "SAVEDECKERROR");
+        new ApolloError("Unable to approve deck", "EDITDECKERROR");
       }
     },
     deleteDeck: async (parent, { _id }) => {

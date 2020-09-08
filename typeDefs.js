@@ -89,8 +89,8 @@ module.exports = gql`
   type Mutation {
     # Deck Resolvers
     userAddDeck(deck: DeckInput): String
-    addDeck(deck: DeckInput): String
     approveDeck(deck: DeckInput): String
+    editDeck(deck: DeckInput): String
     deleteDeck(_id: ID): String
 
     # Multiplayer Resolvers
