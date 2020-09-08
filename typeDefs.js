@@ -74,6 +74,7 @@ module.exports = gql`
     answers: Int
     players: [MultiPlayer]
     gameDeck: GameDeck
+    heads: [String]
   }
 
   input GameRoomInput {
@@ -100,6 +101,7 @@ module.exports = gql`
     exitGameRoom(nick: String, gameId: String): Boolean
     addPlayerAnswer(gameId: String, nick: String, winner: Boolean): Boolean
     changeGameRoomState(gameId: String, state: Int): Boolean
+    sendHead(gameId: String, head: Int): Boolean
 
     # User Resolvers
     registerUser(input: RegistrationInput): Boolean

@@ -27,6 +27,7 @@ module.exports = {
       gameRoomsLocal[gameId].answers = 0;
       gameRoomsLocal[gameId].players = [{ nick: input.creator, points: 0 }];
       gameRoomsLocal[gameId].state = -1;
+      gameRoomsLocal[gameId].heads = [];
       gameRoomsLocal[gameId].gameDeck = {
         name: input.gameDeck.name,
         description: input.gameDeck.description,
@@ -85,6 +86,14 @@ module.exports = {
         );
       }
       gameRoomsLocal[gameId].answers++;
+
+      pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
+
+      return true;
+    },
+
+    sendHead: (parent, { gameId, head }) => {
+      gameRoomsLocal[gameId].heads.push(head);
 
       pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
 
