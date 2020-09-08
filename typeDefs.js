@@ -77,6 +77,11 @@ module.exports = gql`
     heads: [String]
   }
 
+  type HeadSpace {
+    gameId: String
+    heads: [Int]
+  }
+
   input GameRoomInput {
     creator: String
     gameDeck: GameDeckInput
@@ -101,7 +106,10 @@ module.exports = gql`
     exitGameRoom(nick: String, gameId: String): Boolean
     addPlayerAnswer(gameId: String, nick: String, winner: Boolean): Boolean
     changeGameRoomState(gameId: String, state: Int): Boolean
+
+    # Headsending Resolvers
     sendHead(gameId: String, head: Int): Boolean
+    deleteSpace(gameId: String): Boolean
 
     # User Resolvers
     registerUser(input: RegistrationInput): Boolean
@@ -116,5 +124,6 @@ module.exports = gql`
 
   type Subscription {
     GameRoom(gameId: String): GameRoom
+    HeadSpace(gameId: String): HeadSpace
   }
 `;
