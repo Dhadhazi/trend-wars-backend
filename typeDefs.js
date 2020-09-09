@@ -87,9 +87,14 @@ module.exports = gql`
     gameDeck: GameDeckInput
   }
 
-  input RegistrationInput {
+  input RegLogInput {
     email: String
     password: String
+  }
+
+  type UserData {
+    token: String
+    permission: String
   }
 
   type Mutation {
@@ -112,10 +117,13 @@ module.exports = gql`
     deleteSpace(gameId: String): Boolean
 
     # User Resolvers
-    registerUser(input: RegistrationInput): Boolean
+    registerUser(input: RegLogInput): Boolean
+    loginUser(input: RegLogInput): UserData
+    isAdmin(token: String): Boolean
   }
 
   type Query {
+    #Deck Queries
     decks: [Deck]
     decksUnapproved: [Deck]
     deckById(_id: ID): Deck

@@ -1,7 +1,8 @@
 const { ApolloError } = require("apollo-server");
+const bcrypt = require("bcrypt");
 
 const UserModel = require("../models/UserModell");
-const bcrypt = require("bcrypt");
+const jwt = require("../controllers/jwt");
 
 module.exports = {
   Mutation: {
@@ -35,6 +36,25 @@ module.exports = {
         }
       });
       return answer;
+    },
+    loginUser: async (parent, { input }) => {
+      const data = await UserModel.findOne({ email: input.email });
+      if (data === null) {
+        return;
+      }
+      const match = await bcrypt.compare(input.password, data.password);
+      if (match) {
+        data.token = jwt.toJWT({
+          email: input.email,
+          permission: data.permission,
+        });
+        return data;
+      }
+    },
+    isAdmin: (parent, { token }) => {
+      const decoded = jwt.toData(token);
+      if (decoded.permission === "Admin") return true;
+      return false;
     },
   },
 };
