@@ -45,7 +45,7 @@ module.exports = {
         const nickCheck = gameRoomsLocal[gameId].players.filter(
           (p) => p.nick === nick
         );
-        console.log(nickCheck.length);
+
         if (nickCheck.length > 0) return 1;
         if (gameRoomsLocal[gameId].players.length >= 5) return 2;
         return 3;
@@ -69,12 +69,16 @@ module.exports = {
         if (nick === gameRoomsLocal[gameId].creator) {
           console.log("The creator quit, so I need to abort the game");
           gameRoomsLocal[gameId].state = -2;
+
+          setTimeout(() => {
+            delete gameRoomsLocal[gameId];
+          }, 5000);
         }
         gameRoomsLocal[gameId].players = gameRoomsLocal[gameId].players.filter(
           (p) => p.nick !== nick
         );
         pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
-        delete gameRoomsLocal[gameId];
+
         return true;
       }
       return false;
