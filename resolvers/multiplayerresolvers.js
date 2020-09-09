@@ -38,13 +38,19 @@ module.exports = {
       return gameId;
     },
 
-    //checks if the nick already exists int he game room. True if exists, false if not
-    nickExistsCheck: (parent, { nick, gameId }) => {
+    /*checks if the nick already exists int he game room or the room is full. 
+    Sends back 0 if room doesn't exist,  1 if nick exists, 2 if game is full, 3 if all ok*/
+    nickExistsOrFullCheck: (parent, { nick, gameId }) => {
       if (gameRoomsLocal[gameId] !== undefined) {
         const nickCheck = gameRoomsLocal[gameId].players.filter(
           (p) => p.nick === nick
         );
-        return nickCheck.length > 0 ? true : false;
+
+        if (nickCheck.length > 0) return 1;
+        if (gameRoomsLocal[gameId].players.length >= 5) return 2;
+        return 3;
+      } else {
+        return 0;
       }
     },
 
@@ -63,12 +69,16 @@ module.exports = {
         if (nick === gameRoomsLocal[gameId].creator) {
           console.log("The creator quit, so I need to abort the game");
           gameRoomsLocal[gameId].state = -2;
+
+          setTimeout(() => {
+            delete gameRoomsLocal[gameId];
+          }, 5000);
         }
         gameRoomsLocal[gameId].players = gameRoomsLocal[gameId].players.filter(
           (p) => p.nick !== nick
         );
         pubsub.publish("roomupdate", { GameRoom: gameRoomsLocal[gameId] });
-        delete gameRoomsLocal[gameId];
+
         return true;
       }
       return false;
