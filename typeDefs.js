@@ -101,7 +101,7 @@ module.exports = gql`
 
     # Multiplayer Resolvers
     addGameRoom(input: GameRoomInput): String
-    nickExistsCheck(nick: String, gameId: String): Boolean
+    nickExistsOrFullCheck(nick: String, gameId: String): Int
     joinGameRoom(nick: String, gameId: String): GameRoom
     exitGameRoom(nick: String, gameId: String): Boolean
     addPlayerAnswer(gameId: String, nick: String, winner: Boolean): Boolean
