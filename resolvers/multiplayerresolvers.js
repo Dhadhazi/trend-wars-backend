@@ -67,7 +67,6 @@ module.exports = {
     exitGameRoom: (parent, { nick, gameId }) => {
       if (gameRoomsLocal[gameId] !== undefined) {
         if (nick === gameRoomsLocal[gameId].creator) {
-          console.log("The creator quit, so I need to abort the game");
           gameRoomsLocal[gameId].state = -2;
 
           setTimeout(() => {
