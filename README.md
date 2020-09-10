@@ -23,3 +23,7 @@ There are only 3 models, from which only 2 are used. DeckModel and UserModel act
 - userresolvers.js since there is no user system in the frontend only to enter the admin, it only registers, logs in, and can check if the user permission is really admin.
 
 There are more documentation, images, and other goodies in the [frontend repo](https://github.com/Dhadhazi/trend-wars-frontend) of the app.
+
+## Required enviromental variables
+**MONGO_URI** for your MongoDB connection
+**JWT_SECRET** to encode/decode your JSON Web Tokens
