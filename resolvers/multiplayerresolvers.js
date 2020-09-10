@@ -1,7 +1,5 @@
 const { PubSub, withFilter } = require("apollo-server");
 
-const GameRoomModell = require("../models/GameRoomModel");
-
 const pubsub = new PubSub();
 
 /*Storing game data locally instead of the DB, so when 2 even occures at the same time (timer our and players got points) 
