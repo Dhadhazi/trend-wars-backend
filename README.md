@@ -26,4 +26,5 @@ There are more documentation, images, and other goodies in the [frontend repo](h
 
 ## Required enviromental variables
 **MONGO_URI** for your MongoDB connection
+
 **JWT_SECRET** to encode/decode your JSON Web Tokens
