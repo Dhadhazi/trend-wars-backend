@@ -25,13 +25,11 @@ module.exports = async (startDate, endDate, category, place, keywords) => {
           word: word1,
           score: data.default.averages[0],
           winner: data.default.averages[0] >= data.default.averages[1],
-          total_chosen: 0,
         },
         {
           word: word2,
           score: data.default.averages[1],
           winner: data.default.averages[0] < data.default.averages[1],
-          total_chosen: 0,
         },
       ];
     } catch (e) {
